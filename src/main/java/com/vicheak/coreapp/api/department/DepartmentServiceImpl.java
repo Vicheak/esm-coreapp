@@ -97,13 +97,13 @@ public class DepartmentServiceImpl implements DepartmentService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Department name conflicts resources in the system!");
 
-        //check if department phone already exists
         if (Objects.nonNull(departmentDto.departmentPhone())) {
             //check if department phone is correct format (all are digits)
             if (!FormatUtil.checkPhoneFormat(departmentDto.departmentPhone()))
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Department phone is not in correct format!");
 
+            //check if department phone already exists
             if (!departmentDto.departmentPhone().equals(department.getPhone()) &&
                     departmentRepository.existsByPhone(departmentDto.departmentPhone()))
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
