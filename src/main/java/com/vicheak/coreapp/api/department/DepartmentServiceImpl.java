@@ -1,6 +1,8 @@
 package com.vicheak.coreapp.api.department;
 
 import com.vicheak.coreapp.api.department.web.DepartmentDto;
+import com.vicheak.coreapp.spec.DepartmentFilter;
+import com.vicheak.coreapp.spec.DepartmentSpec;
 import com.vicheak.coreapp.util.FormatUtil;
 import com.vicheak.coreapp.util.RandomUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +38,25 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public List<DepartmentDto> searchDepartments(Map<String, String> requestMap) {
-        return null;
+        //extract the data from request map
+        String name = "";
+        String phone = "";
+
+        if (requestMap.containsKey(Department_.NAME))
+            name = requestMap.get(Department_.NAME);
+
+        if (requestMap.containsKey(Department_.PHONE))
+            phone = requestMap.get(Department_.PHONE);
+
+        //using jpa specification to build dynamic query
+        List<Department> departments = departmentRepository.findAll(DepartmentSpec.builder()
+                .departmentFilter(DepartmentFilter.builder()
+                        .name(name)
+                        .phone(phone)
+                        .build())
+                .build());
+
+        return departmentMapper.toDepartmentDto(departments);
     }
 
     @Override
@@ -105,7 +125,13 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public void deleteDepartmentByName(String name) {
+        Department department = departmentRepository.findByNameIgnoreCase(name)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                String.format("Department with name = %s not found...!", name))
+                );
 
+        departmentRepository.delete(department);
     }
 
 }
