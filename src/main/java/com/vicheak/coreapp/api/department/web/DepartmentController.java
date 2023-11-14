@@ -1,6 +1,8 @@
 package com.vicheak.coreapp.api.department.web;
 
 import com.vicheak.coreapp.api.department.DepartmentService;
+import com.vicheak.coreapp.api.employee.EmployeeService;
+import com.vicheak.coreapp.api.employee.web.EmployeeDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import java.util.Map;
 public class DepartmentController {
 
     private final DepartmentService departmentService;
+    private final EmployeeService employeeService;
 
     @GetMapping
     public List<DepartmentDto> loadAllDepartments() {
@@ -27,7 +30,7 @@ public class DepartmentController {
     }
 
     @GetMapping("/search")
-    public List<DepartmentDto> searchDepartments(@RequestParam(required = false) Map<String, String> requestMap){
+    public List<DepartmentDto> searchDepartments(@RequestParam(required = false) Map<String, String> requestMap) {
         return departmentService.searchDepartments(requestMap);
     }
 
@@ -46,8 +49,13 @@ public class DepartmentController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{name}")
-    public void deleteDepartmentByName(@PathVariable("name") String name){
+    public void deleteDepartmentByName(@PathVariable("name") String name) {
         departmentService.deleteDepartmentByName(name);
+    }
+
+    @GetMapping("/{name}/employees")
+    public List<EmployeeDto> loadEmployeesByDepartmentName(@PathVariable("name") String name) {
+        return employeeService.loadEmployeesByDepartmentName(name);
     }
 
 }
