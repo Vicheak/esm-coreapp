@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/departments")
@@ -25,6 +26,11 @@ public class DepartmentController {
         return departmentService.loadDepartmentByName(name);
     }
 
+    @GetMapping("/search")
+    public List<DepartmentDto> searchDepartments(@RequestParam(required = false) Map<String, String> requestMap){
+        return departmentService.searchDepartments(requestMap);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public void createNewDepartment(@RequestBody @Valid DepartmentDto departmentDto) {
@@ -36,6 +42,12 @@ public class DepartmentController {
     public void updateDepartmentByName(@PathVariable("name") String name,
                                        @RequestBody DepartmentDto departmentDto) {
         departmentService.updateDepartmentByName(name, departmentDto);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{name}")
+    public void deleteDepartmentByName(@PathVariable("name") String name){
+        departmentService.deleteDepartmentByName(name);
     }
 
 }

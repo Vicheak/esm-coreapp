@@ -22,6 +22,9 @@ repositories {
 }
 
 dependencies {
+    //For Generating Static Metamodel Classes
+    annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.3.1.Final'
+
     //For Mapping from Entity <-> DTO
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
