@@ -245,4 +245,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.delete(employee);
     }
 
+    @Override
+    public List<EmployeeDto> loadEmployeesByDepartmentName(String name) {
+        return employeeMapper.toEmployeeDto(employeeRepository.findByDepartmentName(name));
+    }
+
 }

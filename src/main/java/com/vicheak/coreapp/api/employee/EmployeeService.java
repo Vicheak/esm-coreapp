@@ -81,4 +81,11 @@ public interface EmployeeService {
      */
     void deleteEmployeeByUuid(String uuid);
 
+    /**
+     * This method is used to load any employee within specific department
+     * @param name is the path parameter from client
+     * @return List<EmployeeDto>
+     */
+    List<EmployeeDto> loadEmployeesByDepartmentName(String name);
+
 }
