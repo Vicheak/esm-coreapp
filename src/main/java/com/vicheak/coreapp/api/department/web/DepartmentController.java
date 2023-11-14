@@ -53,9 +53,6 @@ public class DepartmentController {
         departmentService.deleteDepartmentByName(name);
     }
 
-    @GetMapping("/{name}/employees")
-    public List<EmployeeDto> loadEmployeesByDepartmentName(@PathVariable("name") String name) {
-        return employeeService.loadEmployeesByDepartmentName(name);
-    }
+
 
 }
