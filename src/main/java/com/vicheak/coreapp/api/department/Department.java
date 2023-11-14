@@ -1,9 +1,12 @@
 package com.vicheak.coreapp.api.department;
 
+import com.vicheak.coreapp.api.employee.Employee;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
