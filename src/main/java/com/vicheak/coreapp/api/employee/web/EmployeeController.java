@@ -1,11 +1,13 @@
 package com.vicheak.coreapp.api.employee.web;
 
 import com.vicheak.coreapp.api.employee.EmployeeService;
+import com.vicheak.coreapp.api.file.web.FileDto;
 import com.vicheak.coreapp.pagination.PageDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,13 @@ public class EmployeeController {
     public void updateBaseSalaryByUuid(@PathVariable("uuid") String uuid,
                                        @RequestBody @Valid EmployeeBaseSalaryDto employeeBaseSalaryDto) {
         employeeService.updateBaseSalaryByUuid(uuid, employeeBaseSalaryDto);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{uuid}")
+    public FileDto uploadEmployeeImageByUuid(@PathVariable("uuid") String uuid,
+                                             @RequestPart MultipartFile file) {
+        return employeeService.uploadEmployeeImageByUuid(uuid, file);
     }
 
     @ResponseStatus(HttpStatus.OK)

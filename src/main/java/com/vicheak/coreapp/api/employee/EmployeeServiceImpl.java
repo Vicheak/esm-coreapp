@@ -5,6 +5,8 @@ import com.vicheak.coreapp.api.employee.web.EmployeeBaseSalaryDto;
 import com.vicheak.coreapp.api.employee.web.EmployeeDto;
 import com.vicheak.coreapp.api.employee.web.EmployeeStatusDto;
 import com.vicheak.coreapp.api.employee.web.TransactionEmployeeDto;
+import com.vicheak.coreapp.api.file.FileService;
+import com.vicheak.coreapp.api.file.web.FileDto;
 import com.vicheak.coreapp.pagination.PageDto;
 import com.vicheak.coreapp.spec.EmployeeFilter;
 import com.vicheak.coreapp.spec.EmployeeSpec;
@@ -17,8 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +35,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
     private final DepartmentRepository departmentRepository;
+    private final BaseSalaryLogRepository baseSalaryLogRepository;
+    private final FileService fileService;
 
     @Override
     public List<EmployeeDto> loadAllEmployees() {
@@ -165,12 +171,38 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setBaseSalary(employeeBaseSalaryDto.baseSalary());
 
+        //save history to base salary logs entity
+        BaseSalaryLog baseSalaryLog = BaseSalaryLog.builder()
+                .uuid(UUID.randomUUID().toString())
+                .description(employeeBaseSalaryDto.description())
+                .amount(employeeBaseSalaryDto.baseSalary())
+                .dateTime(LocalDateTime.now())
+                .employee(employee) //set the loaded employee
+                .build();
+
+        //update base salary from employee entity
         employeeRepository.save(employee);
+
+        //save history
+        baseSalaryLogRepository.save(baseSalaryLog);
     }
 
     @Override
-    public void uploadEmployeeImageByUuid(String uuid) {
+    public FileDto uploadEmployeeImageByUuid(String uuid, MultipartFile file) {
+        //load employee by uuid
+        Employee employee = employeeRepository.findByUuid(uuid)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                String.format("Employee with uuid = %s not found...!", uuid))
+                );
 
+        FileDto fileDto = fileService.uploadSingleRestrictImage(file);
+        //update the image name
+        employee.setImageName(fileDto.name());
+
+        employeeRepository.save(employee);
+
+        return fileDto;
     }
 
     @Override

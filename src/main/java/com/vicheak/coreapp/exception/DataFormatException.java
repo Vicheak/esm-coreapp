@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 @RestControllerAdvice
 public class DataFormatException {
@@ -35,5 +36,18 @@ public class DataFormatException {
                 .build();
         return new ResponseEntity<>(baseError, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<?> handleDateTimeParseException(){
+        var baseError = BaseError.builder()
+                .message("Something went wrong!")
+                .code(7777)
+                .status(false)
+                .localDateTime(LocalDateTime.now())
+                .errors("Failed to parse the date time format!")
+                .build();
+        return new ResponseEntity<>(baseError, HttpStatus.BAD_REQUEST);
+    }
+
 
 }
