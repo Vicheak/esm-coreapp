@@ -54,8 +54,8 @@ public class Employee {
     @Column(name = "emp_active")
     private Boolean active;
 
-    @Column(name = "emp_imagepath")
-    private String imagePath;
+    @Column(name = "emp_image")
+    private String imageName;
 
     @ManyToOne
     @JoinColumn(name = "dept_id")

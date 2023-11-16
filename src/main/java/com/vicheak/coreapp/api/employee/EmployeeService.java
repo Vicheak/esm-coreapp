@@ -4,8 +4,9 @@ import com.vicheak.coreapp.api.employee.web.EmployeeBaseSalaryDto;
 import com.vicheak.coreapp.api.employee.web.EmployeeStatusDto;
 import com.vicheak.coreapp.api.employee.web.TransactionEmployeeDto;
 import com.vicheak.coreapp.api.employee.web.EmployeeDto;
+import com.vicheak.coreapp.api.file.web.FileDto;
 import com.vicheak.coreapp.pagination.PageDto;
-import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,12 @@ public interface EmployeeService {
      */
     void updateBaseSalaryByUuid(String uuid, EmployeeBaseSalaryDto employeeBaseSalaryDto);
 
-    void uploadEmployeeImageByUuid(String uuid);
+    /**
+     * This method is used to upload specific employee image by uuid
+     * @param uuid is the path parameter from client
+     * @return FileDto
+     */
+    FileDto uploadEmployeeImageByUuid(String uuid, MultipartFile file);
 
     /**
      * This method is used to update specific employee by uuid (partially update)
