@@ -4,6 +4,7 @@ import com.vicheak.coreapp.api.salarygross.web.SalaryGrossDto;
 import com.vicheak.coreapp.api.salarygross.web.TransactionSalaryGrossDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SalaryGrossService {
 
@@ -19,6 +20,13 @@ public interface SalaryGrossService {
      * @return SalaryGrossDto
      */
     SalaryGrossDto loadSalaryGrossByName(String name);
+
+    /**
+     * This method is used to search for salary gross matching the criteria
+     * @param requestMap is the request parameter from client
+     * @return List<SalaryGrossDto>
+     */
+    List<SalaryGrossDto> searchSalaryGross(Map<String, String> requestMap);
 
     /**
      * This method is used to create new salary gross resource
@@ -38,5 +46,12 @@ public interface SalaryGrossService {
      * @param name is the path parameter from client
      */
     void deleteSalaryGrossByName(String name);
+
+    /**
+     * This method is used to load salary gross based-on gross type name
+     * @param name is the path parameter from client
+     * @return List<SalaryGrossDto>
+     */
+    List<SalaryGrossDto> loadSalaryGrossByGrossTypeName(String name);
 
 }

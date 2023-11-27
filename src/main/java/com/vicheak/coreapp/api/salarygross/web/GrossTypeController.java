@@ -1,6 +1,7 @@
 package com.vicheak.coreapp.api.salarygross.web;
 
 import com.vicheak.coreapp.api.salarygross.GrossTypeService;
+import com.vicheak.coreapp.api.salarygross.SalaryGrossService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.List;
 public class GrossTypeController {
 
     private final GrossTypeService grossTypeService;
+    private final SalaryGrossService salaryGrossService;
 
     @GetMapping
     public List<GrossTypeDto> loadAllGrossTypes() {
@@ -42,6 +44,11 @@ public class GrossTypeController {
     @DeleteMapping("/{name}")
     public void deleteGrossTypeByName(@PathVariable("name") String name) {
         grossTypeService.deleteGrossTypeByName(name);
+    }
+
+    @GetMapping("/{name}/salaryGross")
+    public List<SalaryGrossDto> loadSalaryGrossByGrossTypeName(@PathVariable("name") String name) {
+        return salaryGrossService.loadSalaryGrossByGrossTypeName(name);
     }
 
 }
