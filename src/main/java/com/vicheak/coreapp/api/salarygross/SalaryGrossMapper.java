@@ -2,8 +2,7 @@ package com.vicheak.coreapp.api.salarygross;
 
 import com.vicheak.coreapp.api.salarygross.web.SalaryGrossDto;
 import com.vicheak.coreapp.api.salarygross.web.TransactionSalaryGrossDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -17,5 +16,9 @@ public interface SalaryGrossMapper {
 
     @Mapping(target = "grossType.id", source = "grossTypeId")
     SalaryGross fromTransactionSalaryGrossDto(TransactionSalaryGrossDto transactionSalaryGrossDto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "grossType.id", source = "grossTypeId")
+    void fromTransactionSalaryGrossDto(@MappingTarget SalaryGross salaryGross, TransactionSalaryGrossDto transactionSalaryGrossDto);
 
 }
