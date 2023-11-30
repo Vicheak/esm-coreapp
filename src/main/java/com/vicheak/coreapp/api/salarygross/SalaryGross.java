@@ -1,11 +1,13 @@
 package com.vicheak.coreapp.api.salarygross;
 
+import com.vicheak.coreapp.api.slip.SalaryPayment;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
