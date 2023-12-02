@@ -1,0 +1,7 @@
+salary_gross_id,salary_gross_name,salary_gross_amount,gross_type_id
+1,Allowance,25.00,1
+2,Broken or Damage,20.00,2
+3,Complete Target,30.00,1
+4,Annual Addition,30.00,1
+5,Late,15.00,2
+6,Uniform,20.00,2

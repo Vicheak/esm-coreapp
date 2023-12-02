@@ -1,0 +1,270 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_init_db_structure
+      author: dev.vicheak@gmail.com
+      changes:
+        - createTable:
+            tableName: departments
+            columns:
+              - column:
+                  name: dept_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: dept_name
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: dept_description
+                  type: CLOB
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dept_phone
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+        - createTable:
+            tableName: employees
+            columns:
+              - column:
+                  name: emp_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: emp_uuid
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: emp_fname
+                  type: VARCHAR(50)
+                  constraints:
+                    uniqueConstraintName: uk_con_employees
+                    nullable: false
+              - column:
+                  name: emp_lname
+                  type: VARCHAR(50)
+                  constraints:
+                    uniqueConstraintName: uk_con_employees
+                    nullable: false
+              - column:
+                  name: emp_gender
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: emp_birthdate
+                  type: DATE
+                  constraints:
+                    uniqueConstraintName: uk_con_employees
+                    nullable: false
+              - column:
+                  name: emp_address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: emp_email
+                  type: VARCHAR(100)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: emp_phone
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: emp_basesalary
+                  type: NUMBER
+              - column:
+                  name: emp_active
+                  type: BOOLEAN
+              - column:
+                  name: emp_image
+                  type: VARCHAR(255)
+              - column:
+                  name: dept_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_employees_departments_dept_id
+                    references: departments(dept_id)
+        - createTable:
+            tableName: base_salary_logs
+            columns:
+              - column:
+                  name: base_salary_log_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: base_salary_log_uuid
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: base_salary_log_description
+                  type: CLOB
+                  constraints:
+                    nullable: false
+              - column:
+                  name: base_salary_log_amount
+                  type: NUMBER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: base_salary_log_datetime
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: emp_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_base_salary_logs_employees_emp_id
+                    references: employees(emp_id)
+        - createTable:
+            tableName: gross_types
+            columns:
+              - column:
+                  name: gross_type_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: gross_type_name
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: gross_type_description
+                  type: CLOB
+        - createTable:
+            tableName: salary_gross
+            columns:
+              - column:
+                  name: salary_gross_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: salary_gross_name
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: salary_gross_amount
+                  type: NUMBER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: gross_type_id
+                  type: INT
+                  constraints:
+                    foreignKeyName: fk_salary_gross_gross_types_gross_type_id
+                    references: gross_types(gross_type_id)
+        - createTable:
+            tableName: payment_states
+            columns:
+              - column:
+                  name: payment_state_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: payment_state_status
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+        - createTable:
+            tableName: salary_payments
+            columns:
+              - column:
+                  name: salary_payment_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: salary_payment_uuid
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: salary_payment_datetime
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: salary_payment_basesalary
+                  type: NUMBER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: salary_payment_month
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: salary_payment_year
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: salary_payment_paydatetime
+                  type: DATETIME
+              - column:
+                  name: emp_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_salary_payments_employees_emp_id
+                    references: employees(emp_id)
+              - column:
+                  name: payment_state_id
+                  type: INT
+                  constraints:
+                    foreignKeyName: fk_salary_payments_payment_states_payment_state_id
+                    references: payment_states(payment_state_id)
+        - createTable:
+            tableName: salary_payment_gross
+            columns:
+              - column:
+                  name: salary_payment_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: pk_salary_payment_gross
+                    foreignKeyName: fk_salary_payment_gross_salary_payments_salary_payment_id
+                    references: salary_payments(salary_payment_id)
+              - column:
+                  name: salary_gross_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: pk_salary_payment_gross
+                    foreignKeyName: fk_salary_payment_gross_salary_gross_salary_gross_id
+                    references: salary_gross(salary_gross_id)
+              - column:
+                  name: salary_payment_gross_amount
+                  type: NUMBER
