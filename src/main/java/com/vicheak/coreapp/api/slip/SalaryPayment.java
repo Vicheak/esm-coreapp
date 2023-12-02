@@ -1,7 +1,6 @@
 package com.vicheak.coreapp.api.slip;
 
 import com.vicheak.coreapp.api.employee.Employee;
-import com.vicheak.coreapp.api.salarygross.SalaryGross;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter

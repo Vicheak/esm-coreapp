@@ -17,7 +17,7 @@ public class PaymentState {
     @Column(name = "payment_state_id")
     private Integer id;
 
-    @Column(name = "payment_state_status", unique = true, nullable = false)
+    @Column(name = "payment_state_status", length = 50, unique = true, nullable = false)
     private String status;
 
 }

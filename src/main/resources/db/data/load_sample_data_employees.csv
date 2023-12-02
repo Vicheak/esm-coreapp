@@ -1,0 +1,6 @@
+emp_id,emp_uuid,emp_fname,emp_lname,emp_gender,emp_birthdate,emp_address,emp_email,emp_phone,dept_id
+1,c2087ded-18d6-4a2c-ad60-dbfbbb780c74,Bryana,Roob,female,2003-04-12,95423 Myrtie Cliffs,Torrance.Connelly@hotmail.com,605-773-4919,1
+2,6b76fabd-b1f9-4b52-9e2e-1c8e3a4265fd,Helen,Ward,female,2003-04-12,60419 Macejkovic Pike,Nels_Metz@hotmail.com,288-729-6540,1
+3,3d77cbbc-068b-4ae9-a397-2ec01b2428c4,Giovani,Marvin,male,2003-04-12,607 Mraz Loop,Kraig5@hotmail.com,279-634-0868,2
+4,4b825c31-5e7c-4ee7-9da5-6b8325f404c9,Josephine,Kirlin,male,2003-04-12,690 Justyn Flat,Flavie_Langosh67@gmail.com,800-782-3312,2
+5,97dfd3e6-b38c-478c-bc3f-79df8c2753ef,Lula,Robel,female,2003-04-12,902 Spencer Fork,Lorine17@gmail.com,410-880-4845,3

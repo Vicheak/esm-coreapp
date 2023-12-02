@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003_changing_sequence
+      author: dev.vicheak@gmail.com
+      changes:
+        - sqlFile:
+            path: db/sql/changing_sequence.sql
