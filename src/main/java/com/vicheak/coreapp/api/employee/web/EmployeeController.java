@@ -6,6 +6,7 @@ import com.vicheak.coreapp.pagination.PageDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,7 +59,7 @@ public class EmployeeController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping("/{uuid}")
+    @PutMapping(value = "/{uuid}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public FileDto uploadEmployeeImageByUuid(@PathVariable("uuid") String uuid,
                                              @RequestPart MultipartFile file) {
         return employeeService.uploadEmployeeImageByUuid(uuid, file);
