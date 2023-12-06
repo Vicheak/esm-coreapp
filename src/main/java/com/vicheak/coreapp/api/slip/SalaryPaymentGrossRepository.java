@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SalaryPaymentGrossRepository extends JpaRepository<SalaryPaymentGross, Long> {
 
-
+    void deleteBySalaryPayment(SalaryPayment salaryPayment);
 
 }

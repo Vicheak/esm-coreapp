@@ -5,6 +5,7 @@ import com.vicheak.coreapp.api.employee.EmployeeRepository;
 import com.vicheak.coreapp.api.salarygross.SalaryGross;
 import com.vicheak.coreapp.api.salarygross.SalaryGrossRepository;
 import com.vicheak.coreapp.api.slip.web.TransactionSalaryPaymentDto;
+import com.vicheak.coreapp.api.slip.web.UpdatePaymentStateDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -94,6 +95,41 @@ public class SalaryPaymentServiceImpl implements SalaryPaymentService {
                 salaryPaymentGrossRepository.save(salaryPaymentGross);
             });
         }
+    }
+
+    @Transactional
+    @Override
+    public void updatePaymentStateByUuid(String uuid, UpdatePaymentStateDto updatePaymentStateDto) {
+        //load salary payment by uuid
+        SalaryPayment salaryPayment = salaryPaymentRepository.findByUuid(uuid)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Salary payment with uuid = %s has not been found...!"
+                                        .formatted(uuid))
+                );
+
+        salaryPayment = salaryPaymentMapper.mapFromUpdatePaymentStateDto(salaryPayment, updatePaymentStateDto);
+
+        //update salary payment into the database
+        salaryPaymentRepository.save(salaryPayment);
+    }
+
+    @Transactional
+    @Override
+    public void deleteSalaryPaymentByUuid(String uuid) {
+        //load salary payment by uuid
+        SalaryPayment salaryPayment = salaryPaymentRepository.findByUuid(uuid)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Salary payment with uuid = %s has not been found...!"
+                                        .formatted(uuid))
+                );
+
+        //check the salary payment gross and delete all the related ones
+        salaryPaymentGrossRepository.deleteBySalaryPayment(salaryPayment);
+
+        //delete salary payment from the database
+        salaryPaymentRepository.delete(salaryPayment);
     }
 
 }

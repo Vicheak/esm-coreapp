@@ -15,8 +15,21 @@ public class SalaryPaymentController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    void createNewSalaryPayment(@RequestBody @Valid TransactionSalaryPaymentDto transactionSalaryPaymentDto){
+    void createNewSalaryPayment(@RequestBody @Valid TransactionSalaryPaymentDto transactionSalaryPaymentDto) {
         salaryPaymentService.createNewSalaryPayment(transactionSalaryPaymentDto);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{uuid}")
+    void updatePaymentStateByUuid(@PathVariable("uuid") String uuid,
+                                  @RequestBody @Valid UpdatePaymentStateDto updatePaymentStateDto) {
+        salaryPaymentService.updatePaymentStateByUuid(uuid, updatePaymentStateDto);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{uuid}")
+    void deleteSalaryPaymentByUuid(@PathVariable("uuid") String uuid){
+        salaryPaymentService.deleteSalaryPaymentByUuid(uuid);
     }
 
 }
