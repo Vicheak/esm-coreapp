@@ -7,14 +7,21 @@ import com.vicheak.coreapp.api.salarygross.SalaryGrossRepository;
 import com.vicheak.coreapp.api.slip.web.TransactionSalaryPaymentDto;
 import com.vicheak.coreapp.api.slip.web.UpdatePaymentStateDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,30 +36,16 @@ public class SalaryPaymentServiceImpl implements SalaryPaymentService {
     @Transactional
     @Override
     public void createNewSalaryPayment(TransactionSalaryPaymentDto transactionSalaryPaymentDto) {
+        //check a valid transaction
+        checkValidTransaction(transactionSalaryPaymentDto);
+
         //load specific employee by employee id
-        Employee selectedEmployee = employeeRepository.findByUuid(transactionSalaryPaymentDto.employeeUuid())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                "Employee with uuid = %s has not been found...!"
-                                        .formatted(transactionSalaryPaymentDto.employeeUuid()))
-                );
-
-        //check if the selected employee's base salary is defined
-        if (Objects.isNull(selectedEmployee.getBaseSalary()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Please define base salary for employee with uuid = %s before generating slip!"
-                            .formatted(transactionSalaryPaymentDto.employeeUuid()));
-
-        //check salary gross id list for salary payment gross bridge entity
-        if (Objects.nonNull(transactionSalaryPaymentDto.salaryGrossIds())) {
-            //check if salary gross id list exists in the database
-            boolean isNotFound = transactionSalaryPaymentDto.salaryGrossIds().stream()
-                    .anyMatch(salaryGrossId -> !salaryGrossRepository.existsById(salaryGrossId));
-
-            if (isNotFound)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Salary Gross Id does not exist...!");
-        }
+        Optional<Employee> selectedEmployeeOptional = employeeRepository.findByUuid(transactionSalaryPaymentDto.employeeUuid());
+        Employee selectedEmployee;
+        if (selectedEmployeeOptional.isPresent())
+            selectedEmployee = selectedEmployeeOptional.get();
+        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Something went wrong with the database!");
 
         //map salary payment object
         SalaryPayment salaryPayment =
@@ -94,6 +87,169 @@ public class SalaryPaymentServiceImpl implements SalaryPaymentService {
                 //save salary payment gross
                 salaryPaymentGrossRepository.save(salaryPaymentGross);
             });
+        }
+    }
+
+    @Transactional
+    @Override
+    public Map<Integer, String> uploadSalaryPayments(MultipartFile excelFile) {
+        //check if the file is empty
+        if (excelFile.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Please upload one prepared Excel file!");
+
+        //map to customize exception from excel file
+        Map<Integer, String> exceptionMessages = new HashMap<>();
+
+        //create list of dto to store transaction salary payment
+        List<TransactionSalaryPaymentDto> transactionData = new ArrayList<>();
+
+        Workbook workbook;
+
+        try {
+            //create workbook instance
+            workbook = new XSSFWorkbook(excelFile.getInputStream());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    ex.getMessage());
+        }
+
+        //get specific sheet from Excel file
+        Sheet sheet = workbook.getSheet("salary_slip_sheet");
+
+        //check if the sheet is not found
+        if (Objects.isNull(sheet))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "The specified sheet is not correct! Please name the sheet by \"salary_slip_sheet\"");
+
+        //access each row from Excel sheet
+        Iterator<Row> rowIterator = sheet.iterator();
+
+        //skip the row header from Excel sheet
+        if (rowIterator.hasNext())
+            rowIterator.next();
+
+        while (rowIterator.hasNext()) {
+            try {
+                boolean checkValidation = true;
+                int columnIndex = 0;
+
+                Row row = rowIterator.next();
+
+                //access each cell within each row
+                Cell rowNumberCell = row.getCell(columnIndex++);
+                int rowNumber = (int) rowNumberCell.getNumericCellValue();
+
+                Cell employeeUuidCell = row.getCell(columnIndex++);
+                String employeeUuid = employeeUuidCell.getStringCellValue();
+
+                Cell monthCell = row.getCell(columnIndex++);
+                int month = (int) monthCell.getNumericCellValue();
+
+                Cell yearCell = row.getCell(columnIndex++);
+                int year = (int) yearCell.getNumericCellValue();
+
+                Cell salaryGrossIdsCell = row.getCell(columnIndex);
+                String salaryGrossIds = Objects.nonNull(salaryGrossIdsCell) ? salaryGrossIdsCell.getStringCellValue() : "";
+
+                //check if the row is empty
+                if (rowNumber == 0 && employeeUuid.isEmpty() && month == 0 && year == 0 && salaryGrossIds.isEmpty())
+                    continue;
+
+                //validate row number
+                if (rowNumber <= 0) {
+                    rowNumber = -1;
+                    exceptionMessages.put(rowNumber, "Row number must not be a negative number or 0!");
+                    checkValidation = false;
+                }
+
+                //validate employee uuid
+                if (employeeUuid.isEmpty() || employeeUuid.isBlank()) {
+                    exceptionMessages.put(rowNumber, "Employee uuid must not be blank!");
+                    checkValidation = false;
+                }
+
+                //validate month
+                if (month <= 0 || month > 12) {
+                    exceptionMessages.put(rowNumber, "Month must be between 1 and 12!");
+                    checkValidation = false;
+                }
+
+                //validate year
+                if (year < 2020 || year > 2100) {
+                    exceptionMessages.put(rowNumber, "Year must be between 2020 and 2100!");
+                    checkValidation = false;
+                }
+
+                //add new transaction data row
+                if (checkValidation) {
+                    Set<Integer> salaryGrossIdsAsFinal;
+
+                    //convert from string of salary gross ids to set of integer ids
+                    if (salaryGrossIds.isEmpty() || salaryGrossIds.isBlank()) {
+                        salaryGrossIdsAsFinal = Collections.emptySet();
+                    } else {
+                        List<String> salaryGrossIdsAsString = new ArrayList<>(
+                                Arrays.asList(salaryGrossIds.split(","))
+                        );
+
+                        salaryGrossIdsAsFinal = salaryGrossIdsAsString.stream()
+                                .map(Integer::parseInt)
+                                .collect(Collectors.toSet());
+                    }
+
+                    transactionData.add(TransactionSalaryPaymentDto.builder()
+                            .employeeUuid(employeeUuid)
+                            .month(month)
+                            .year(year)
+                            .salaryGrossIds(salaryGrossIdsAsFinal)
+                            .build());
+                }
+            } catch (Exception ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+            }
+        }
+
+        //check if there are any exceptions
+        if (exceptionMessages.isEmpty()) {
+            //perform transactions here
+
+            //check a valid transaction
+            transactionData.forEach(this::checkValidTransaction);
+
+            //perform each transaction against the database
+            transactionData.forEach(this::createNewSalaryPayment);
+
+            return Map.of(1, "Upload Salary Slip Successfully!");
+        }
+
+        return exceptionMessages;
+    }
+
+    private void checkValidTransaction(TransactionSalaryPaymentDto transactionSalaryPaymentDto) {
+        //load specific employee by employee id
+        Employee selectedEmployee = employeeRepository.findByUuid(transactionSalaryPaymentDto.employeeUuid())
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Employee with uuid = %s has not been found...!"
+                                        .formatted(transactionSalaryPaymentDto.employeeUuid()))
+                );
+
+        //check if the selected employee's base salary is defined
+        if (Objects.isNull(selectedEmployee.getBaseSalary()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Please define base salary for employee with uuid = %s before generating slip!"
+                            .formatted(transactionSalaryPaymentDto.employeeUuid()));
+
+        //check salary gross id list for salary payment gross bridge entity
+        if (Objects.nonNull(transactionSalaryPaymentDto.salaryGrossIds())) {
+            //check if salary gross id list exists in the database
+            boolean isNotFound = transactionSalaryPaymentDto.salaryGrossIds().stream()
+                    .anyMatch(salaryGrossId -> !salaryGrossRepository.existsById(salaryGrossId));
+
+            if (isNotFound)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Salary Gross Id does not exist...!");
         }
     }
 
