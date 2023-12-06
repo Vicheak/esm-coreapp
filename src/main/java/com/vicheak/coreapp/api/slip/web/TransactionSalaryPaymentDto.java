@@ -2,10 +2,12 @@ package com.vicheak.coreapp.api.slip.web;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import org.hibernate.validator.constraints.Range;
 
 import java.util.Set;
 
+@Builder
 public record TransactionSalaryPaymentDto(@NotNull(message = "Employee UUID should not be null!")
                                           String employeeUuid,
 
