@@ -32,7 +32,7 @@ public class PaymentStateController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping("/{status}")
+    @PatchMapping("/{status}")
     public void updatePaymentStateByStatus(@PathVariable("status") String status,
                                            @RequestBody PaymentStateDto paymentStateDto) {
         paymentStateService.updatePaymentStateByStatus(status, paymentStateDto);
