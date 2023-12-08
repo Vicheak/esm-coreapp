@@ -18,6 +18,7 @@ public interface ReportMapper {
     List<BaseSalaryEmployeeDetailDto> toBaseSalaryEmployeeDetailDto(List<BaseSalaryLog> baseSalaryLogs);
 
     @Mapping(target = "salaryPaymentId", source = "id")
+    @Mapping(target = "salaryPaymentUuid", source = "uuid")
     @Mapping(target = "generatedSlipDateTime", source = "dateTime")
     @Mapping(target = "paymentStatus", source = "salaryPayment.paymentState.status")
     SalarySlipDto toSalarySlipDto(SalaryPayment salaryPayment);

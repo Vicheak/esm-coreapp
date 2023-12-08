@@ -12,6 +12,8 @@ public class SalarySlipDto {
     @JsonIgnore
     private Long salaryPaymentId;
 
+    private String salaryPaymentUuid;
+
     private LocalDateTime generatedSlipDateTime;
 
     private BigDecimal baseSalary;
