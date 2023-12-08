@@ -26,4 +26,9 @@ public class ReportController {
         return reportService.reportEmployeeDetail(uuid);
     }
 
+    @GetMapping("/salaryPaymentDetail/{uuid}")
+    public ReportSalaryPaymentDto reportSalaryPaymentDetail(@PathVariable("uuid") String uuid) {
+        return reportService.reportSalaryPaymentDetail(uuid);
+    }
+
 }

@@ -4,12 +4,9 @@ import com.vicheak.coreapp.api.department.Department;
 import com.vicheak.coreapp.api.department.DepartmentRepository;
 import com.vicheak.coreapp.api.employee.*;
 import com.vicheak.coreapp.api.employee.web.EmployeeDto;
-import com.vicheak.coreapp.api.report.web.BaseSalaryEmployeeDetailDto;
-import com.vicheak.coreapp.api.report.web.ReportEmployeeDetailDto;
-import com.vicheak.coreapp.api.report.web.ReportNoEmpDto;
-import com.vicheak.coreapp.api.report.web.SalarySlipDto;
-import com.vicheak.coreapp.api.salarygross.SalaryGross;
-import com.vicheak.coreapp.api.salarygross.SalaryGrossRepository;
+import com.vicheak.coreapp.api.report.web.*;
+import com.vicheak.coreapp.api.salarygross.SalaryGrossMapper;
+import com.vicheak.coreapp.api.salarygross.web.SalaryGrossDto;
 import com.vicheak.coreapp.api.slip.SalaryPayment;
 import com.vicheak.coreapp.api.slip.SalaryPaymentGross;
 import com.vicheak.coreapp.api.slip.SalaryPaymentGrossRepository;
@@ -20,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +31,7 @@ public class ReportServiceImpl implements ReportService {
     private final BaseSalaryLogRepository baseSalaryLogRepository;
     private final SalaryPaymentRepository salaryPaymentRepository;
     private final SalaryPaymentGrossRepository salaryPaymentGrossRepository;
+    private final SalaryGrossMapper salaryGrossMapper;
 
     @Override
     public List<ReportNoEmpDto> reportNoEmp() {
@@ -88,19 +83,12 @@ public class ReportServiceImpl implements ReportService {
                 List<SalaryPaymentGross> salaryPaymentGrossList =
                         salaryPaymentGrossRepository.findBySalaryPaymentId(salarySlipDto.getSalaryPaymentId());
 
-                Map<Integer, List<SalaryPaymentGross>> salaryPaymentGrossMap = salaryPaymentGrossList.stream()
-                        .collect(Collectors.groupingBy(salaryPaymentGross ->
-                                salaryPaymentGross.getSalaryGross().getGrossType().getId()));
+                Map<Integer, List<SalaryPaymentGross>> salaryPaymentGrossMap = buildSalaryPaymentGrossMap(salaryPaymentGrossList);
 
                 if (!salaryPaymentGrossMap.isEmpty()) {
                     //find total benefit & deduction salary gross
-                    double salaryGrossBenefitAmount = salaryPaymentGrossMap.get(1).stream()
-                            .mapToDouble(spg -> spg.getAmount().doubleValue())
-                            .sum();
-
-                    double salaryGrossDeductionAmount = salaryPaymentGrossMap.get(2).stream()
-                            .mapToDouble(spg -> spg.getAmount().doubleValue())
-                            .sum();
+                    double salaryGrossBenefitAmount = buildSalaryPaymentGrossBenefit(salaryPaymentGrossMap);
+                    double salaryGrossDeductionAmount = buildSalaryPaymentGrossDeduction(salaryPaymentGrossMap);
 
                     BigDecimal finalSalary = salarySlipDto.getBaseSalary().add(BigDecimal.valueOf(salaryGrossBenefitAmount - salaryGrossDeductionAmount));
 
@@ -121,4 +109,70 @@ public class ReportServiceImpl implements ReportService {
                 .salarySlipDtos(salarySlipDtos)
                 .build();
     }
+
+    @Override
+    public ReportSalaryPaymentDto reportSalaryPaymentDetail(String uuid) {
+        //load salary payment resource by specific uuid
+        SalaryPayment salaryPayment = salaryPaymentRepository.findByUuid(uuid)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Salary payment with uuid = %s has not been found...!"
+                                        .formatted(uuid))
+                );
+
+        //map from entity to report dto
+        ReportSalaryPaymentDto reportSalaryPaymentDto = reportMapper.toReportSalaryPaymentDto(salaryPayment);
+
+        //load salary payment gross list by salary payment id
+        List<SalaryPaymentGross> salaryPaymentGrossList =
+                salaryPaymentGrossRepository.findBySalaryPaymentId(salaryPayment.getId());
+
+        Map<Integer, List<SalaryPaymentGross>> salaryPaymentGrossMap = buildSalaryPaymentGrossMap(salaryPaymentGrossList);
+
+        if (!salaryPaymentGrossMap.isEmpty()) {
+            //find total benefit & deduction salary gross
+            double salaryGrossBenefitAmount = buildSalaryPaymentGrossBenefit(salaryPaymentGrossMap);
+            double salaryGrossDeductionAmount = buildSalaryPaymentGrossDeduction(salaryPaymentGrossMap);
+
+            BigDecimal finalSalary = salaryPayment.getBaseSalary().add(BigDecimal.valueOf(salaryGrossBenefitAmount - salaryGrossDeductionAmount));
+
+            reportSalaryPaymentDto.setSalaryGrossBenefitAmount(BigDecimal.valueOf(salaryGrossBenefitAmount));
+            reportSalaryPaymentDto.setSalaryGrossDeductionAmount(BigDecimal.valueOf(salaryGrossDeductionAmount));
+            reportSalaryPaymentDto.setFinalSalary(finalSalary);
+
+        } else {
+            reportSalaryPaymentDto.setSalaryGrossBenefitAmount(BigDecimal.valueOf(0));
+            reportSalaryPaymentDto.setSalaryGrossDeductionAmount(BigDecimal.valueOf(0));
+            reportSalaryPaymentDto.setFinalSalary(salaryPayment.getBaseSalary());
+        }
+
+        //build salary gross for report
+        List<SalaryGrossDto> salaryGrossDtos = salaryGrossMapper.toSalaryGrossDtoList(salaryPaymentGrossList);
+        reportSalaryPaymentDto.setSalaryGrossDtos(salaryGrossDtos);
+
+        return reportSalaryPaymentDto;
+    }
+
+    private Map<Integer, List<SalaryPaymentGross>> buildSalaryPaymentGrossMap(List<SalaryPaymentGross> salaryPaymentGrossList) {
+        return salaryPaymentGrossList.stream()
+                .collect(Collectors.groupingBy(salaryPaymentGross ->
+                        salaryPaymentGross.getSalaryGross().getGrossType().getId()));
+    }
+
+    private double buildSalaryPaymentGrossBenefit(Map<Integer, List<SalaryPaymentGross>> salaryPaymentGrossMap) {
+        if (Objects.nonNull(salaryPaymentGrossMap.get(1)))
+            return salaryPaymentGrossMap.get(1).stream()
+                    .mapToDouble(spg -> spg.getAmount().doubleValue())
+                    .sum();
+        return 0;
+    }
+
+    private double buildSalaryPaymentGrossDeduction(Map<Integer, List<SalaryPaymentGross>> salaryPaymentGrossMap) {
+        if (Objects.nonNull(salaryPaymentGrossMap.get(2)))
+            return salaryPaymentGrossMap.get(2).stream()
+                    .mapToDouble(spg -> spg.getAmount().doubleValue())
+                    .sum();
+        return 0;
+    }
+
 }
