@@ -2,9 +2,7 @@ package com.vicheak.coreapp.api.employee;
 
 import com.vicheak.coreapp.api.department.Department;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,6 +10,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "employees", uniqueConstraints =
 @UniqueConstraint(columnNames = {"emp_fname", "emp_lname", "emp_birthdate"}))
