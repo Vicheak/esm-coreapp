@@ -30,25 +30,25 @@ public class EmployeeSpec implements Specification<Employee> {
 
         if (Objects.nonNull(employeeFilter.firstName())) {
             Predicate firstNamePredicate = cb.like(cb.lower(employeeRoot.get(Employee_.FIRST_NAME)),
-                    employeeFilter.firstName() + '%');
+                    employeeFilter.firstName().toLowerCase() + '%');
             predicates.add(firstNamePredicate);
         }
 
         if (Objects.nonNull(employeeFilter.lastName())) {
             Predicate lastNamePredicate = cb.like(cb.lower(employeeRoot.get(Employee_.LAST_NAME)),
-                    employeeFilter.lastName() + '%');
+                    employeeFilter.lastName().toLowerCase() + '%');
             predicates.add(lastNamePredicate);
         }
 
         if (Objects.nonNull(employeeFilter.address())) {
             Predicate addressPredicate = cb.like(cb.lower(employeeRoot.get(Employee_.ADDRESS)),
-                    '%' + employeeFilter.address() + '%');
+                    '%' + employeeFilter.address().toLowerCase() + '%');
             predicates.add(addressPredicate);
         }
 
         if (Objects.nonNull(employeeFilter.email())) {
             Predicate emailPredicate = cb.like(cb.lower(employeeRoot.get(Employee_.EMAIL)),
-                    employeeFilter.email() + '%');
+                    employeeFilter.email().toLowerCase() + '%');
             predicates.add(emailPredicate);
         }
 
