@@ -4,5 +4,6 @@ import lombok.Builder;
 
 @Builder
 public record ReportNoEmpDto(String departmentName,
+
                              Integer numberOfEmployee) {
 }
