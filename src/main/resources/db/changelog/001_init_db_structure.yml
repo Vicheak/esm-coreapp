@@ -268,3 +268,125 @@ databaseChangeLog:
               - column:
                   name: salary_payment_gross_amount
                   type: NUMBER
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_uuid
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: user_username
+                  type: VARCHAR(80)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: user_email
+                  type: VARCHAR(80)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: user_password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_nickname
+                  type: VARCHAR(30)
+              - column:
+                  name: user_verified_code
+                  type: VARCHAR(10)
+              - column:
+                  name: user_is_verified
+                  type: BOOLEAN
+              - column:
+                  name: user_is_deleted
+                  type: BOOLEAN
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: role_name
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: role_description
+                  type: VARCHAR(255)
+        - createTable:
+            tableName: authorities
+            columns:
+              - column:
+                  name: authority_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: authority_name
+                  type: VARCHAR(80)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: authority_description
+                  type: VARCHAR(255)
+        - createTable:
+            tableName: users_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: pk_users_roles
+                    foreignKeyName: fk_users_roles_users_user_id
+                    references: users(user_id)
+              - column:
+                  name: role_id
+                  type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: pk_users_roles
+                    foreignKeyName: fk_users_roles_roles_role_id
+                    references: roles(role_id)
+        - createTable:
+            tableName: roles_authorities
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: pk_roles_authorities
+                    foreignKeyName: fk_roles_authorities_roles_role_id
+                    references: roles(role_id)
+              - column:
+                  name: auth_id
+                  type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: pk_roles_authorities
+                    foreignKeyName: fk_roles_authorities_authorities_authority_id
+                    references: authorities(authority_id)
