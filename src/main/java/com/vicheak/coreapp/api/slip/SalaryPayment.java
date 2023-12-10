@@ -2,9 +2,7 @@ package com.vicheak.coreapp.api.slip;
 
 import com.vicheak.coreapp.api.employee.Employee;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,6 +10,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "salary_payments")
 public class SalaryPayment {
