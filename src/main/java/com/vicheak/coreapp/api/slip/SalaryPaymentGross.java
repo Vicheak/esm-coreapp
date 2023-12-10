@@ -2,10 +2,7 @@ package com.vicheak.coreapp.api.slip;
 
 import com.vicheak.coreapp.api.salarygross.SalaryGross;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -13,6 +10,8 @@ import java.math.BigDecimal;
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "salary_payment_gross")
 public class SalaryPaymentGross {
