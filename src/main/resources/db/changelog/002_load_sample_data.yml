@@ -92,3 +92,33 @@ databaseChangeLog:
                   name: payment_state_status
                   type: VARCHAR(50)
             file: db/data/load_sample_data_payment_states.csv
+        - loadData:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+              - column:
+                  name: role_name
+                  type: VARCHAR(50)
+            file: db/data/load_sample_data_roles.csv
+        - loadData:
+            tableName: authorities
+            columns:
+              - column:
+                  name: authority_id
+                  type: INT
+              - column:
+                  name: authority_name
+                  type: VARCHAR(80)
+            file: db/data/load_sample_data_authorities.csv
+        - loadData:
+            tableName: roles_authorities
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+              - column:
+                  name: auth_id
+                  type: INT
+            file: db/data/load_sample_data_roles_authorities.csv
