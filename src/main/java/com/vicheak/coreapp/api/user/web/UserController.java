@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -13,10 +15,40 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping
+    public List<UserDto> loadAllUsers() {
+        return userService.loadAllUsers();
+    }
+
+    @GetMapping("/{uuid}")
+    public UserDto loadUserByUuid(@PathVariable("uuid") String uuid) {
+        return userService.loadUserByUuid(uuid);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public void createNewUser(@RequestBody @Valid NewUserDto newUserDto) {
         userService.createNewUser(newUserDto);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/{uuid}")
+    public void updateUserByUuid(@PathVariable("uuid") String uuid,
+                                 @RequestBody @Valid UpdateUserDto updateUserDto) {
+        userService.updateUserByUuid(uuid, updateUserDto);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{uuid}")
+    public void updateIsDeletedByUuid(@PathVariable("uuid") String uuid,
+                                      @RequestBody @Valid IsDeletedUserDto isDeletedUserDto){
+        userService.updateIsDeletedByUuid(uuid, isDeletedUserDto.isDeleted());
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{uuid}")
+    public void deleteUserByUuid(@PathVariable("uuid") String uuid){
+        userService.deleteUserByUuid(uuid);
     }
 
 }
