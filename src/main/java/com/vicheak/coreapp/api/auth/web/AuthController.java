@@ -42,4 +42,25 @@ public class AuthController {
         return Map.of("message", "Congratulation! Your email has been verified...!");
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/changePassword")
+    public Map<String, String> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
+        authService.changePassword(changePasswordDto);
+        return Map.of("message", "Your password has been reset successfully...!");
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/sendForgetPasswordCode")
+    public Map<String, String> sendForgetPasswordCode(@RequestBody @Valid ForgetPasswordDto forgetPasswordDto) throws MessagingException {
+        authService.sendForgetPasswordCode(forgetPasswordDto);
+        return Map.of("message", "Please check your email for verification code!");
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/forgetPasswordReset")
+    public Map<String, String> forgetPasswordReset(@RequestBody @Valid ForgetPasswordResetDto forgetPasswordResetDto) {
+        authService.forgetPasswordReset(forgetPasswordResetDto);
+        return Map.of("message", "Your password has been reset successfully...!");
+    }
+
 }
