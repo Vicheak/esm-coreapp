@@ -1,7 +1,6 @@
 package com.vicheak.coreapp.api.auth;
 
-import com.vicheak.coreapp.api.auth.web.RegisterDto;
-import com.vicheak.coreapp.api.auth.web.VerifyDto;
+import com.vicheak.coreapp.api.auth.web.*;
 import com.vicheak.coreapp.api.mail.Mail;
 import com.vicheak.coreapp.api.mail.MailService;
 import com.vicheak.coreapp.api.user.User;
@@ -90,6 +89,81 @@ public class AuthServiceImpl implements AuthService {
 
         //save verified user to the database
         authRepository.save(verifiedUser);
+    }
+
+    @Transactional
+    @Override
+    public void changePassword(ChangePasswordDto changePasswordDto) {
+        //load verified user by email and valid password
+        //valid user = already verified and active status
+        User validUser = authRepository.findByEmailAndPasswordAndIsVerifiedTrueAndIsDeletedFalse(changePasswordDto.email(),
+                        changePasswordDto.password())
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                                "Attempting to change password has been failed!")
+                );
+
+        //set new password
+        validUser.setPassword(changePasswordDto.newPassword());
+
+        //save valid user to the database
+        authRepository.save(validUser);
+    }
+
+    @Transactional
+    @Override
+    public void sendForgetPasswordCode(ForgetPasswordDto forgetPasswordDto) throws MessagingException {
+        //check if the email is already verified
+        if (authRepository.existsByEmailAndIsVerifiedTrueAndIsDeletedFalse(forgetPasswordDto.email())) {
+            //generate six digit verified code
+            String verifiedCode = RandomUtil.getRandomNumber();
+
+            //update verified code into the database by specified email
+            authRepository.updateVerifiedCodeByEmail(forgetPasswordDto.email(), verifiedCode);
+
+            //send six digits code to the specified email
+            Mail<String> verifiedMail = new Mail<>();
+            verifiedMail.setSender(adminMail);
+            verifiedMail.setReceiver(forgetPasswordDto.email());
+            verifiedMail.setSubject("ESM Service Email Verification - For Forget Password");
+            verifiedMail.setTemplate("auth/verify-mail");
+            verifiedMail.setMetaData(verifiedCode);
+
+            mailService.sendMail(verifiedMail);
+            return;
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                "The email is unauthorized or it has not been verified yet!");
+    }
+
+    @Transactional
+    @Override
+    public void forgetPasswordReset(ForgetPasswordResetDto forgetPasswordResetDto) {
+        //check if the email is already verified
+        if (authRepository.existsByEmailAndIsVerifiedTrueAndIsDeletedFalse(forgetPasswordResetDto.email())) {
+
+            //check if user has sent the forget password code to mailbox
+            if (authRepository.existsByEmailAndVerifiedCodeNotNullAndIsVerifiedTrue(forgetPasswordResetDto.email())) {
+                //load verified user by email and valid verified code
+                User verifiedUser = authRepository.findByEmailAndVerifiedCodeAndIsDeletedFalse(
+                                forgetPasswordResetDto.email(),
+                                forgetPasswordResetDto.verifiedCode())
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                                        "Email verification is unauthorized!")
+                        );
+
+                //reset user's password
+                verifiedUser.setPassword(forgetPasswordResetDto.password());
+                verifiedUser.setVerifiedCode(null);
+                return;
+            }
+
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Please send the forget password code to reset your password!");
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                "The email is unauthorized or it has not been verified yet!");
     }
 
 }

@@ -15,4 +15,14 @@ public interface AuthRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndVerifiedCodeAndIsDeletedFalse(String email, String verifiedCode);
 
+    Optional<User> findByEmailAndPasswordAndIsVerifiedTrueAndIsDeletedFalse(String email, String password);
+
+    Boolean existsByEmailAndIsVerifiedTrueAndIsDeletedFalse(String email);
+
+    @Modifying
+    @Query("UPDATE User AS u SET u.verifiedCode = :verifiedCode WHERE u.email = :email")
+    void updateVerifiedCodeByEmail(String email, String verifiedCode);
+
+    Boolean existsByEmailAndVerifiedCodeNotNullAndIsVerifiedTrue(String email);
+
 }
