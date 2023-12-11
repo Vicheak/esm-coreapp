@@ -22,6 +22,9 @@ repositories {
 }
 
 dependencies {
+    //For Sending Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     //For Working with Excel Files
     implementation 'org.apache.poi:poi:5.2.5'
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
