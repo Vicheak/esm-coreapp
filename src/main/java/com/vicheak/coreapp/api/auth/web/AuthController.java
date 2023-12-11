@@ -4,6 +4,7 @@ import com.vicheak.coreapp.api.auth.AuthService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,11 +17,15 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @Value("${app.base-uri}")
+    private String appBaseUri;
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
     public Map<String, String> register(@RequestBody @Valid RegisterDto registerDto) throws MessagingException {
         authService.register(registerDto);
-        return Map.of("message", "Please check your email for verification code!");
+        return Map.of("message", "Please check your email for verification code!",
+                "verifyUri", appBaseUri + "auth/verify?email=" + registerDto.email());
     }
 
     @ResponseStatus(HttpStatus.OK)
