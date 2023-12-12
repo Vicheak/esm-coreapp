@@ -55,14 +55,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         //customize security filter
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/docs/", "/swagger-ui/index.html/", "/file/**", "/auth/**", "/api/v1/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/index.html", "/file/**", "/auth/**", "/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/departments/**").hasAnyRole("ADMIN", "ACCOUNTANT")
                 .anyRequest().authenticated());
 
         //use default form login
         http.formLogin(Customizer.withDefaults());
 
-        //allow http basic for client application
+        //configure http basic for client application
         http.httpBasic(Customizer.withDefaults());
 
         //disable csrf -> cannot use default form login
