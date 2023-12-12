@@ -43,7 +43,7 @@ public class User {
     @Column(name = "user_is_deleted")
     private Boolean isDeleted;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns =
             @JoinColumn(name = "user_id", referencedColumnName = "user_id"),

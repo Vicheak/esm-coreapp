@@ -28,7 +28,7 @@ public class Role {
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "roles_authorities",
             joinColumns =
             @JoinColumn(name = "role_id", referencedColumnName = "role_id"),
