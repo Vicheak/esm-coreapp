@@ -59,7 +59,7 @@ public class EmployeeController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping(value = "/{uuid}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/uploadProfile/{uuid}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public FileDto uploadEmployeeImageByUuid(@PathVariable("uuid") String uuid,
                                              @RequestPart MultipartFile file) {
         return employeeService.uploadEmployeeImageByUuid(uuid, file);

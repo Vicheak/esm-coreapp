@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User AS u SET u.isDeleted = :isDeleted WHERE u.uuid = :uuid")
     void updateIsDeletedStatusByUuid(String uuid, Boolean isDeleted);
 
+    Optional<User> findByEmailAndIsVerifiedTrueAndIsDeletedFalse(String email);
+
 }

@@ -5,6 +5,7 @@ import com.vicheak.coreapp.api.user.web.UpdateUserDto;
 import com.vicheak.coreapp.api.user.web.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,6 +23,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserDto> loadAllUsers() {
@@ -65,6 +67,8 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.fromNewUserDto(newUserDto);
 
         user.setUuid(UUID.randomUUID().toString());
+        //encrypt raw password via bcrypt algorithm
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setIsVerified(false);
         user.setIsDeleted(false);
 
