@@ -1,6 +1,7 @@
 package com.vicheak.coreapp.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vicheak.coreapp.api.auth.AuthService;
 import com.vicheak.coreapp.api.department.DepartmentService;
 import com.vicheak.coreapp.api.department.web.DepartmentDto;
 import com.vicheak.coreapp.api.employee.BaseSalaryLogService;
@@ -11,10 +12,12 @@ import com.vicheak.coreapp.api.salarygross.GrossTypeService;
 import com.vicheak.coreapp.api.salarygross.SalaryGrossService;
 import com.vicheak.coreapp.api.slip.PaymentStateService;
 import com.vicheak.coreapp.api.slip.SalaryPaymentService;
+import com.vicheak.coreapp.api.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -52,6 +55,10 @@ public class WebMvcControllerTests {
     private PaymentStateService paymentStateService;
     @MockBean
     private SalaryPaymentService salaryPaymentService;
+    @MockBean
+    private AuthService authService;
+    @MockBean
+    private UserService userService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -68,6 +75,7 @@ public class WebMvcControllerTests {
                     "12345831671"));
         }};
 
+        //mock service behavior
         given(departmentService.loadAllDepartments())
                 .willReturn(departmentDtoList);
 
@@ -128,6 +136,40 @@ public class WebMvcControllerTests {
         //then
         response.andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testWebDepartmentControllerCreateNewDepartment() throws Exception {
+        //given
+        DepartmentDto departmentDto = new DepartmentDto("IT",
+                "Information Technology",
+                "12345610453");
+
+        //return type as void -> no answer from mocking
+        willDoNothing().given(departmentService).createNewDepartment(departmentDto);
+
+        //when
+        ResultActions response = mockMvc.perform(post("/api/v1/departments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(departmentDto)));
+
+        //then
+        response.andDo(print())
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void testWebDepartmentControllerDeleteDepartmentByName() throws Exception {
+        //given
+        willDoNothing().given(departmentService).deleteDepartmentByName("IT");
+
+        //when
+        ResultActions response =
+                mockMvc.perform(delete("/api/v1/departments/{name}", "IT"));
+
+        //then
+        response.andDo(print())
+                .andExpect(status().isNoContent());
     }
 
 }
