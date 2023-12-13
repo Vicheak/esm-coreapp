@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -44,8 +45,9 @@ public class AuthController {
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/changePassword")
-    public Map<String, String> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
-        authService.changePassword(changePasswordDto);
+    public Map<String, String> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto,
+                                              Authentication authentication) {
+        authService.changePassword(changePasswordDto, authentication);
         return Map.of("message", "Your password has been reset successfully...!");
     }
 

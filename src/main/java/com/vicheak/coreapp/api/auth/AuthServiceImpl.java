@@ -6,11 +6,14 @@ import com.vicheak.coreapp.api.mail.MailService;
 import com.vicheak.coreapp.api.user.User;
 import com.vicheak.coreapp.api.user.UserService;
 import com.vicheak.coreapp.api.user.web.NewUserDto;
+import com.vicheak.coreapp.security.CustomUserDetails;
 import com.vicheak.coreapp.util.RandomUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,6 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthMapper authMapper;
     private final UserService userService;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${spring.mail.username}")
     private String adminMail;
@@ -93,18 +97,37 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public void changePassword(ChangePasswordDto changePasswordDto) {
+    public void changePassword(ChangePasswordDto changePasswordDto, Authentication authentication) {
+        //load the current logged user
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User loggedUser = customUserDetails.getUser();
+
+        //check the matched dto and current logged user
+        if (!loggedUser.getEmail().equals(changePasswordDto.email()))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "The email is unauthorized...!");
+
         //load verified user by email and valid password
         //valid user = already verified and active status
-        User validUser = authRepository.findByEmailAndPasswordAndIsVerifiedTrueAndIsDeletedFalse(changePasswordDto.email(),
+        /*User validUser = authRepository.findByEmailAndPasswordAndIsVerifiedTrueAndIsDeletedFalse(changePasswordDto.email(),
                         changePasswordDto.password())
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                                "Attempting to change password has been failed!")
+                );*/
+
+        User validUser = authRepository.findByEmailAndIsVerifiedTrueAndIsDeletedFalse(changePasswordDto.email())
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                                 "Attempting to change password has been failed!")
                 );
 
+        if (!passwordEncoder.matches(changePasswordDto.password(), validUser.getPassword()))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Previous password is incorrect!");
+
         //set new password
-        validUser.setPassword(changePasswordDto.newPassword());
+        validUser.setPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
 
         //save valid user to the database
         authRepository.save(validUser);
@@ -154,7 +177,7 @@ public class AuthServiceImpl implements AuthService {
                         );
 
                 //reset user's password
-                verifiedUser.setPassword(forgetPasswordResetDto.password());
+                verifiedUser.setPassword(passwordEncoder.encode(forgetPasswordResetDto.password()));
                 verifiedUser.setVerifiedCode(null);
                 return;
             }

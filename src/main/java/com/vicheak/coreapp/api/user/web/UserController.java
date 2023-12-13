@@ -4,6 +4,7 @@ import com.vicheak.coreapp.api.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/me")
+    public UserDto me(Authentication authentication){
+        return userService.me(authentication);
+    }
 
     @GetMapping
     public List<UserDto> loadAllUsers() {

@@ -65,6 +65,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         //customize security filter chain
         http.authorizeHttpRequests(auth -> auth
+                //auth security
+                .requestMatchers(
+                        HttpMethod.PUT,
+                        "/api/v1/auth/changePassword").hasAnyAuthority("user:profile")
+
                 //allow these endpoints without security
                 .requestMatchers(
                         "/swagger-ui/index.html",
@@ -95,16 +100,113 @@ public class SecurityConfig {
                         "/api/v1/employees/**").hasAnyAuthority("employee:write")
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/employees/**").hasAnyAuthority("employee:update")
+                        "/api/v1/employees/uploadProfile/**").hasAnyAuthority("employee:uploadProfile")
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/employees/uploadProfile/**").hasAnyAuthority("employee:uploadProfile")
+                        "/api/v1/employees/**").hasAnyAuthority("employee:update")
                 .requestMatchers(
                         HttpMethod.PATCH,
                         "/api/v1/employees/**").hasAnyAuthority("employee:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
                         "/api/v1/employees/**").hasAnyAuthority("employee:delete")
+
+                //base salary log security
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/baseSalarylogs/**").hasAnyAuthority("baseSalaryLog:read")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/baseSalarylogs/**").hasAnyAuthority("baseSalaryLog:delete")
+
+                //gross type security
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:read")
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:write")
+                .requestMatchers(
+                        HttpMethod.PATCH,
+                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:update")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:delete")
+
+                //salary gross security
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:read")
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:write")
+                .requestMatchers(
+                        HttpMethod.PATCH,
+                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:update")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:delete")
+
+                //payment state security
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:read")
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:write")
+                .requestMatchers(
+                        HttpMethod.PATCH,
+                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:update")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:delete")
+
+                //salary payment security
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/salaryPayments/**").hasAnyAuthority("salaryPayment:write")
+                .requestMatchers(
+                        HttpMethod.PUT,
+                        "/api/v1/salaryPayments/**").hasAnyAuthority("salaryPayment:update")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/salaryPayments/**").hasAnyAuthority("salaryPayment:delete")
+
+                //report security
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/reports/**").hasAnyAuthority("report:view")
+
+                //file and directory security
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/files/**").hasAnyAuthority("file:upload")
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/files/**").hasAnyAuthority("file:read")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/files/**").hasAnyAuthority("file:delete")
+
+                //user security
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/users/me").hasAnyAuthority("user:profile")
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/users/**").hasAnyAuthority("user:read")
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/users/**").hasAnyAuthority("user:write")
+                .requestMatchers(
+                        HttpMethod.PATCH,
+                        "/api/v1/users/**").hasAnyAuthority("user:update")
+                .requestMatchers(
+                        HttpMethod.PUT,
+                        "/api/v1/users/**").hasAnyAuthority("user:update")
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/api/v1/users/**").hasAnyAuthority("user:delete")
 
                 //other endpoints not specified are authenticated
                 .anyRequest().authenticated());
