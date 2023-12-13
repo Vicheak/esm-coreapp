@@ -3,10 +3,18 @@ package com.vicheak.coreapp.api.user;
 import com.vicheak.coreapp.api.user.web.NewUserDto;
 import com.vicheak.coreapp.api.user.web.UpdateUserDto;
 import com.vicheak.coreapp.api.user.web.UserDto;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
 public interface UserService {
+
+    /**
+     * This method is used to load current user's profile
+     * @param authentication is the request from client
+     * @return UserDto
+     */
+    UserDto me(Authentication authentication);
 
     /**
      * This method is used to load all user resources from the system

@@ -2,6 +2,7 @@ package com.vicheak.coreapp.api.auth;
 
 import com.vicheak.coreapp.api.auth.web.*;
 import jakarta.mail.MessagingException;
+import org.springframework.security.core.Authentication;
 
 public interface AuthService {
 
@@ -20,8 +21,9 @@ public interface AuthService {
     /**
      * This method is used to change password of a specific user resource
      * @param changePasswordDto is the request from client
+     * @param authentication is the request from client
      */
-    void changePassword(ChangePasswordDto changePasswordDto);
+    void changePassword(ChangePasswordDto changePasswordDto, Authentication authentication);
 
     /**
      * This method is used to send verification code for resetting password

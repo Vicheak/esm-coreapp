@@ -25,4 +25,6 @@ public interface AuthRepository extends JpaRepository<User, Long> {
 
     Boolean existsByEmailAndVerifiedCodeNotNullAndIsVerifiedTrue(String email);
 
+    Optional<User> findByEmailAndIsVerifiedTrueAndIsDeletedFalse(String email);
+
 }

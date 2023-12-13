@@ -3,8 +3,11 @@ package com.vicheak.coreapp.api.user;
 import com.vicheak.coreapp.api.user.web.NewUserDto;
 import com.vicheak.coreapp.api.user.web.UpdateUserDto;
 import com.vicheak.coreapp.api.user.web.UserDto;
+import com.vicheak.coreapp.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +21,25 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public UserDto me(Authentication authentication) {
+        /*log.info("Auth Principle : {}", authentication.getPrincipal());
+        log.info("Auth Name : {}", authentication.getName());
+        log.info("Auth Authorities : {}", authentication.getAuthorities());
+        log.info("Auth Details : {}", authentication.getDetails());
+        log.info("Auth Credentials : {}", authentication.getCredentials());*/
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        return userMapper.toUserDto(customUserDetails.getUser());
+    }
 
     @Override
     public List<UserDto> loadAllUsers() {
