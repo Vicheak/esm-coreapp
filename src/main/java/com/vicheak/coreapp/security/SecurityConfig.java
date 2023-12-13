@@ -1,5 +1,13 @@
 package com.vicheak.coreapp.security;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +20,18 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.util.List;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
@@ -66,9 +85,10 @@ public class SecurityConfig {
         //customize security filter chain
         http.authorizeHttpRequests(auth -> auth
                 //auth security
+                //SCOPE_ : default authority checking pattern of jwt
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/auth/changePassword").hasAnyAuthority("user:profile")
+                        "/api/v1/auth/changePassword").hasAnyAuthority("SCOPE_user:profile")
 
                 //allow these endpoints without security
                 .requestMatchers(
@@ -80,133 +100,133 @@ public class SecurityConfig {
                 //department security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/departments/**").hasAnyAuthority("department:read")
+                        "/api/v1/departments/**").hasAnyAuthority("SCOPE_department:read")
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/departments/**").hasAnyAuthority("department:write")
+                        "/api/v1/departments/**").hasAnyAuthority("SCOPE_department:write")
                 .requestMatchers(
                         HttpMethod.PATCH,
-                        "/api/v1/departments/**").hasAnyAuthority("department:update")
+                        "/api/v1/departments/**").hasAnyAuthority("SCOPE_department:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/departments/**").hasAnyAuthority("department:delete")
+                        "/api/v1/departments/**").hasAnyAuthority("SCOPE_department:delete")
 
                 //employee security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/employees/**").hasAnyAuthority("employee:read")
+                        "/api/v1/employees/**").hasAnyAuthority("SCOPE_employee:read")
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/employees/**").hasAnyAuthority("employee:write")
+                        "/api/v1/employees/**").hasAnyAuthority("SCOPE_employee:write")
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/employees/uploadProfile/**").hasAnyAuthority("employee:uploadProfile")
+                        "/api/v1/employees/uploadProfile/**").hasAnyAuthority("SCOPE_employee:uploadProfile")
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/employees/**").hasAnyAuthority("employee:update")
+                        "/api/v1/employees/**").hasAnyAuthority("SCOPE_employee:update")
                 .requestMatchers(
                         HttpMethod.PATCH,
-                        "/api/v1/employees/**").hasAnyAuthority("employee:update")
+                        "/api/v1/employees/**").hasAnyAuthority("SCOPE_employee:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/employees/**").hasAnyAuthority("employee:delete")
+                        "/api/v1/employees/**").hasAnyAuthority("SCOPE_employee:delete")
 
                 //base salary log security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/baseSalarylogs/**").hasAnyAuthority("baseSalaryLog:read")
+                        "/api/v1/baseSalarylogs/**").hasAnyAuthority("SCOPE_baseSalaryLog:read")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/baseSalarylogs/**").hasAnyAuthority("baseSalaryLog:delete")
+                        "/api/v1/baseSalarylogs/**").hasAnyAuthority("SCOPE_baseSalaryLog:delete")
 
                 //gross type security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:read")
+                        "/api/v1/grossTypes/**").hasAnyAuthority("SCOPE_grossType:read")
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:write")
+                        "/api/v1/grossTypes/**").hasAnyAuthority("SCOPE_grossType:write")
                 .requestMatchers(
                         HttpMethod.PATCH,
-                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:update")
+                        "/api/v1/grossTypes/**").hasAnyAuthority("SCOPE_grossType:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/grossTypes/**").hasAnyAuthority("grossType:delete")
+                        "/api/v1/grossTypes/**").hasAnyAuthority("SCOPE_grossType:delete")
 
                 //salary gross security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:read")
+                        "/api/v1/salaryGross/**").hasAnyAuthority("SCOPE_salaryGross:read")
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:write")
+                        "/api/v1/salaryGross/**").hasAnyAuthority("SCOPE_salaryGross:write")
                 .requestMatchers(
                         HttpMethod.PATCH,
-                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:update")
+                        "/api/v1/salaryGross/**").hasAnyAuthority("SCOPE_salaryGross:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/salaryGross/**").hasAnyAuthority("salaryGross:delete")
+                        "/api/v1/salaryGross/**").hasAnyAuthority("SCOPE_salaryGross:delete")
 
                 //payment state security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:read")
+                        "/api/v1/paymentStates/**").hasAnyAuthority("SCOPE_paymentState:read")
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:write")
+                        "/api/v1/paymentStates/**").hasAnyAuthority("SCOPE_paymentState:write")
                 .requestMatchers(
                         HttpMethod.PATCH,
-                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:update")
+                        "/api/v1/paymentStates/**").hasAnyAuthority("SCOPE_paymentState:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/paymentStates/**").hasAnyAuthority("paymentState:delete")
+                        "/api/v1/paymentStates/**").hasAnyAuthority("SCOPE_paymentState:delete")
 
                 //salary payment security
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/salaryPayments/**").hasAnyAuthority("salaryPayment:write")
+                        "/api/v1/salaryPayments/**").hasAnyAuthority("SCOPE_salaryPayment:write")
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/salaryPayments/**").hasAnyAuthority("salaryPayment:update")
+                        "/api/v1/salaryPayments/**").hasAnyAuthority("SCOPE_salaryPayment:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/salaryPayments/**").hasAnyAuthority("salaryPayment:delete")
+                        "/api/v1/salaryPayments/**").hasAnyAuthority("SCOPE_salaryPayment:delete")
 
                 //report security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/reports/**").hasAnyAuthority("report:view")
+                        "/api/v1/reports/**").hasAnyAuthority("SCOPE_report:view")
 
                 //file and directory security
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/files/**").hasAnyAuthority("file:upload")
+                        "/api/v1/files/**").hasAnyAuthority("SCOPE_file:upload")
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/files/**").hasAnyAuthority("file:read")
+                        "/api/v1/files/**").hasAnyAuthority("SCOPE_file:read")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/files/**").hasAnyAuthority("file:delete")
+                        "/api/v1/files/**").hasAnyAuthority("SCOPE_file:delete")
 
                 //user security
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/users/me").hasAnyAuthority("user:profile")
+                        "/api/v1/users/me").hasAnyAuthority("SCOPE_user:profile")
                 .requestMatchers(
                         HttpMethod.GET,
-                        "/api/v1/users/**").hasAnyAuthority("user:read")
+                        "/api/v1/users/**").hasAnyAuthority("SCOPE_user:read")
                 .requestMatchers(
                         HttpMethod.POST,
-                        "/api/v1/users/**").hasAnyAuthority("user:write")
+                        "/api/v1/users/**").hasAnyAuthority("SCOPE_user:write")
                 .requestMatchers(
                         HttpMethod.PATCH,
-                        "/api/v1/users/**").hasAnyAuthority("user:update")
+                        "/api/v1/users/**").hasAnyAuthority("SCOPE_user:update")
                 .requestMatchers(
                         HttpMethod.PUT,
-                        "/api/v1/users/**").hasAnyAuthority("user:update")
+                        "/api/v1/users/**").hasAnyAuthority("SCOPE_user:update")
                 .requestMatchers(
                         HttpMethod.DELETE,
-                        "/api/v1/users/**").hasAnyAuthority("user:delete")
+                        "/api/v1/users/**").hasAnyAuthority("SCOPE_user:delete")
 
                 //other endpoints not specified are authenticated
                 .anyRequest().authenticated());
@@ -215,7 +235,11 @@ public class SecurityConfig {
         //http.formLogin(Customizer.withDefaults());
 
         //configure http basic for client application
-        http.httpBasic(Customizer.withDefaults());
+        //http.httpBasic(Customizer.withDefaults());
+
+        //configure JWT | OAuth2 Resource Server
+        http.oauth2ResourceServer(oauth2 ->
+                oauth2.jwt(Customizer.withDefaults()));
 
         //disable csrf -> cannot use default form login -> for post, put, patch, delete http
         http.csrf(AbstractHttpConfigurer::disable);
@@ -225,6 +249,46 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
+    }
+
+    @Bean
+    public KeyPair keyPair() {
+        try {
+            var keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2048);
+            return keyPairGenerator.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Bean
+    public RSAKey rsaKey(KeyPair keyPair) {
+        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                .privateKey(keyPair.getPrivate())
+                .keyID(UUID.randomUUID().toString())
+                .build();
+    }
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource(RSAKey rsaKey) {
+        var jwkSet = new JWKSet(rsaKey);
+        return new JWKSource<SecurityContext>() {
+            @Override
+            public List<JWK> get(JWKSelector jwkSelector, SecurityContext context) throws KeySourceException {
+                return jwkSelector.select(jwkSet);
+            }
+        };
+    }
+
+    @Bean
+    JwtDecoder jwtDecoder(RSAKey rsaKey) throws JOSEException {
+        return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    }
+
+    @Bean
+    JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+        return new NimbusJwtEncoder(jwkSource);
     }
 
 }

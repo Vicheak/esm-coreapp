@@ -65,4 +65,10 @@ public class AuthController {
         return Map.of("message", "Your password has been reset successfully...!");
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/login")
+    public AuthDto login(@RequestBody @Valid LoginDto loginDto){
+        return authService.login(loginDto);
+    }
+
 }

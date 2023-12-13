@@ -37,4 +37,11 @@ public interface AuthService {
      */
     void forgetPasswordReset(ForgetPasswordResetDto forgetPasswordResetDto);
 
+    /**
+     * This method is used to log into the system to access any resources
+     * @param loginDto is the request from client
+     * @return AuthDto
+     */
+    AuthDto login(LoginDto loginDto);
+
 }

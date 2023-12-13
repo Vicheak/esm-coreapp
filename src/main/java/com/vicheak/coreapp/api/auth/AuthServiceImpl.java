@@ -10,16 +10,29 @@ import com.vicheak.coreapp.security.CustomUserDetails;
 import com.vicheak.coreapp.util.RandomUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final AuthRepository authRepository;
@@ -27,6 +40,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final JwtEncoder jwtEncoder;
 
     @Value("${spring.mail.username}")
     private String adminMail;
@@ -187,6 +202,43 @@ public class AuthServiceImpl implements AuthService {
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                 "The email is unauthorized or it has not been verified yet!");
+    }
+
+    @Override
+    public AuthDto login(LoginDto loginDto) {
+        //authenticate with email and password
+        Authentication auth = new UsernamePasswordAuthenticationToken(loginDto.email(), loginDto.password());
+        //use bean dao provider in authenticate with user details service
+        auth = daoAuthenticationProvider.authenticate(auth);
+
+        log.info("Auth Name : {}", auth.getName());
+        log.info("Auth Authorities : {}", auth.getAuthorities());
+
+        Instant now = Instant.now();
+
+        //claim payload must be joined with space and default authority pattern is SCOPE_
+        String scope = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
+
+        //create payload for jwt
+        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                .id(auth.getName())
+                .issuer("public")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .subject("Access Token")
+                .audience(List.of("public client"))
+                .claim("scope", scope)
+                .build();
+
+        //encode for access token
+        String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+
+        return AuthDto.builder()
+                .accessToken(accessToken)
+                .type("Bearer")
+                .build();
     }
 
 }
