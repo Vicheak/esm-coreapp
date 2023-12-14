@@ -44,4 +44,12 @@ public interface AuthService {
      */
     AuthDto login(LoginDto loginDto);
 
+    /**
+     * This method is used to get new access token when the current access token
+     * get expired
+     * @param refreshTokenDto is the request token from client
+     * @return AuthDto
+     */
+    AuthDto refreshToken(RefreshTokenDto refreshTokenDto);
+
 }

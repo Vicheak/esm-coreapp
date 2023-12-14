@@ -71,4 +71,10 @@ public class AuthController {
         return authService.login(loginDto);
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/token")
+    public AuthDto refreshToken(@RequestBody @Valid RefreshTokenDto refreshTokenDto){
+        return authService.refreshToken(refreshTokenDto);
+    }
+
 }
