@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,8 +39,28 @@ public class UserServiceImpl implements UserService {
         log.info("Auth Details : {}", authentication.getDetails());
         log.info("Auth Credentials : {}", authentication.getCredentials());*/
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        return userMapper.toUserDto(customUserDetails.getUser());
+        //CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        //return userMapper.toUserDto(customUserDetails.getUser());
+
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+
+        //log authentication principle information
+        log.info("Jwt Id : {}", jwt.getId());
+        //log.info("Jwt Issuer : {}", jwt.getIssuer().toString());
+        //log.info("Jwt Issued At : {}", jwt.getIssuedAt());
+        //log.info("Jwt Expired At : {}", jwt.getExpiresAt());
+        log.info("Jwt Subject : {}", jwt.getSubject());
+        //log.info("Jwt Audience : {}", jwt.getAudience());
+        //log.info("Jwt Claim As String : {}", jwt.getClaimAsString("scope"));
+        //log.info("Jwt Headers : {}", jwt.getHeaders());
+        //log.info("Jwt Token Value : {}", jwt.getTokenValue());
+
+        User user = userRepository.findByEmailAndIsVerifiedTrueAndIsDeletedFalse(jwt.getId())
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("Email has not been found in the system or is unauthorized...!")
+                );
+
+        return userMapper.toUserDto(user);
     }
 
     @Override
@@ -113,7 +135,7 @@ public class UserServiceImpl implements UserService {
                 );
 
         //check if the user status is inactive
-        if(user.getIsDeleted())
+        if (user.getIsDeleted())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "User status is inactive!");
 

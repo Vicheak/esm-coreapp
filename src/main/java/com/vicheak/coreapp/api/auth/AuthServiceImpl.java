@@ -11,6 +11,8 @@ import com.vicheak.coreapp.util.RandomUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,13 +20,17 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -41,7 +47,14 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final JwtEncoder jwtEncoder;
+    private JwtEncoder jwtRefreshTokenEncoder;
+
+    @Autowired
+    public void setJwtRefreshTokenEncoder(@Qualifier("jwtRefreshTokenEncoder") JwtEncoder jwtRefreshTokenEncoder) {
+        this.jwtRefreshTokenEncoder = jwtRefreshTokenEncoder;
+    }
 
     @Value("${spring.mail.username}")
     private String adminMail;
@@ -214,7 +227,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Auth Name : {}", auth.getName());
         log.info("Auth Authorities : {}", auth.getAuthorities());
 
-        Instant now = Instant.now();
+        //Instant now = Instant.now();
 
         //claim payload must be joined with space and default authority pattern is SCOPE_
         String scope = auth.getAuthorities().stream()
@@ -222,23 +235,162 @@ public class AuthServiceImpl implements AuthService {
                 .collect(Collectors.joining(" "));
 
         //create payload for jwt
-        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+        //claim set for access token
+        /*JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                .id(auth.getName())
+                .issuer("public")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.SECONDS))
+                .subject("Access Token")
+                .audience(List.of("public client"))
+                .claim("scope", scope)
+                .build();
+
+        //claim set for refresh token
+        JwtClaimsSet refreshTokenJwtClaimsSet = JwtClaimsSet.builder()
                 .id(auth.getName())
                 .issuer("public")
                 .issuedAt(now)
                 .expiresAt(now.plus(1, ChronoUnit.HOURS))
-                .subject("Access Token")
+                .subject("Refresh Token")
                 .audience(List.of("public client"))
                 .claim("scope", scope)
                 .build();
 
         //encode for access token
         String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+        //encode for refresh token
+        String refreshToken = jwtRefreshTokenEncoder.encode(JwtEncoderParameters.from(refreshTokenJwtClaimsSet)).getTokenValue();
 
         return AuthDto.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .type("Bearer")
+                .build();*/
+
+        return AuthDto.builder()
+                .type("Bearer")
+                .accessToken(generateAccessToken(GenerateTokenDto.builder()
+                        .auth(auth.getName())
+                        .scope(scope)
+                        .expiration(Instant.now().plus(1, ChronoUnit.SECONDS))
+                        .build()))
+                .refreshToken(generateRefreshToken(GenerateTokenDto.builder()
+                        .auth(auth.getName())
+                        .scope(scope)
+                        .expiration(Instant.now().plus(30, ChronoUnit.DAYS))
+                        .build()))
                 .build();
+    }
+
+    @Override
+    public AuthDto refreshToken(RefreshTokenDto refreshTokenDto) {
+        //authenticate the refresh token using bearer token authentication
+        Authentication auth = new BearerTokenAuthenticationToken(refreshTokenDto.refreshToken());
+        auth = jwtAuthenticationProvider.authenticate(auth);
+
+        //logg the authentication information
+        //log.info("Auth Principle : {}", auth.getPrincipal());
+        log.info("Auth Name : {}", auth.getName());
+        log.info("Auth Authorities : {}", auth.getAuthorities());
+
+        Jwt jwt = (Jwt) auth.getPrincipal();
+
+        //Instant now = Instant.now();
+
+        //create payload for jwt
+        //claim set for access token
+        /*JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                .id(jwt.getId())
+                .issuer("public")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.SECONDS))
+                .subject("Access Token")
+                .audience(List.of("public client"))
+                .claim("scope", jwt.getClaimAsString("scope"))
+                .build();
+
+        //claim set for refresh token
+        JwtClaimsSet refreshTokenJwtClaimsSet = JwtClaimsSet.builder()
+                .id(jwt.getId())
+                .issuer("public")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .subject("Refresh Token")
+                .audience(List.of("public client"))
+                .claim("scope", jwt.getClaimAsString("scope"))
+                .build();
+
+        //encode for access token
+        String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+        //encode for refresh token
+        String refreshToken = jwtRefreshTokenEncoder.encode(JwtEncoderParameters.from(refreshTokenJwtClaimsSet)).getTokenValue();
+
+        return AuthDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .type("Bearer")
+                .build();*/
+
+        return AuthDto.builder()
+                .type("Bearer")
+                .accessToken(generateAccessToken(GenerateTokenDto.builder()
+                        .auth(jwt.getId())
+                        .scope(jwt.getClaimAsString("scope"))
+                        .expiration(Instant.now().plus(1, ChronoUnit.SECONDS))
+                        .build()))
+                .refreshToken(generateRefreshTokenCheckDuration(GenerateTokenDto.builder()
+                        .auth(jwt.getId())
+                        .scope(jwt.getClaimAsString("scope"))
+                        .previousToken(refreshTokenDto.refreshToken())
+                        .expiration(Instant.now().plus(30, ChronoUnit.DAYS))
+                        .duration(Duration.between(Instant.now(), jwt.getExpiresAt()))
+                        .checkDurationNumber(7)
+                        .build()))
+                .build();
+    }
+
+    private String generateAccessToken(GenerateTokenDto generateTokenDto) {
+        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                .id(generateTokenDto.auth())
+                .issuer("public")
+                .issuedAt(Instant.now())
+                .expiresAt(generateTokenDto.expiration())
+                .subject("Access Token")
+                .audience(List.of("Public Client"))
+                .claim("scope", generateTokenDto.scope())
+                .build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+    }
+
+    private String generateRefreshToken(GenerateTokenDto generateTokenDto) {
+        JwtClaimsSet jwtRefreshTokenClaimsSet = JwtClaimsSet.builder()
+                .id(generateTokenDto.auth())
+                .issuer("public")
+                .issuedAt(Instant.now())
+                .expiresAt(generateTokenDto.expiration())
+                .subject("Refresh Token")
+                .audience(List.of("Public Client"))
+                .claim("scope", generateTokenDto.scope())
+                .build();
+        return jwtRefreshTokenEncoder.encode(JwtEncoderParameters.from(jwtRefreshTokenClaimsSet)).getTokenValue();
+    }
+
+    private String generateRefreshTokenCheckDuration(GenerateTokenDto generateTokenDto) {
+        log.info("Duration : {}", generateTokenDto.duration().toDays());
+        if (generateTokenDto.duration().toDays() < generateTokenDto.checkDurationNumber()) {
+            JwtClaimsSet jwtRefreshTokenClaimsSet = JwtClaimsSet.builder()
+                    .id(generateTokenDto.auth())
+                    .issuer("public")
+                    .issuedAt(Instant.now())
+                    .expiresAt(generateTokenDto.expiration())
+                    .subject("Refresh Token")
+                    .audience(List.of("Public Client"))
+                    .claim("scope", generateTokenDto.scope())
+                    .build();
+            return jwtRefreshTokenEncoder.encode(JwtEncoderParameters.from(jwtRefreshTokenClaimsSet)).getTokenValue();
+        }
+        return generateTokenDto.previousToken();
     }
 
 }
