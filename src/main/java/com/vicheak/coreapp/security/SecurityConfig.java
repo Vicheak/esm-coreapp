@@ -208,6 +208,9 @@ public class SecurityConfig {
                         "/api/v1/files/**").hasAnyAuthority("SCOPE_file:upload")
                 .requestMatchers(
                         HttpMethod.GET,
+                        "api/v1/files/download/**").permitAll()
+                .requestMatchers(
+                        HttpMethod.GET,
                         "/api/v1/files/**").hasAnyAuthority("SCOPE_file:read")
                 .requestMatchers(
                         HttpMethod.DELETE,
