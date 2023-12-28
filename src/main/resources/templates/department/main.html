@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/adminLayout}">
+<head>
+    <title>Department Dashboard</title>
+</head>
+
+<body>
+
+<div class="content" layout:fragment="content">
+
+    <!-- Child content will render here -->
+
+    <h1 class="h3 mb-3"><strong>Department Management</strong> Dashboard</h1>
+
+    <div class="row">
+        <div class="col-12 col-lg-12">
+            <div class="card flex-fill">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0">All Departments</h5>
+                    <a th:href="@{/departments/form}" class="btn btn-primary">Add New</a>
+                </div>
+                <table class="table table-striped table-hover my-0">
+                    <thead class="table-header">
+                    <tr>
+                        <th>#</th>
+                        <th>Department Name</th>
+                        <th>Department Phone</th>
+                        <th>Department Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="department : ${departments}"
+                        th:object="${department}">
+                        <td th:text="*{id}"></td>
+                        <td th:text="*{name}"></td>
+                        <td>
+                            <span th:text="*{phone}" class="mb-2 mr-2 badge badge-pill badge-info"></span>
+                        </td>
+                        <td th:text="*{description}"></td>
+                        <td>
+                            <a th:href="@{/departments/{id}/detail(id = *{id})}" class="text-primary">View</a>|
+                            <a th:href="@{/departments/{id}/edit(id = *{id})}" class="text-success">Edit</a>|
+                            <!-- Button trigger modal -->
+                            <a class="text-danger actionDeleteContent"
+                               data-toggle="modal"
+                               data-target="#confirmationModal"
+                               th:data-id="*{id}">Delete</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal Fragment -->
+    <div th:replace="~{/fragments/modal :: confirmationModal}"></div>
+
+</div>
+
+<th:block layout:fragment="childScript">
+
+    <!--Child script will render here -->
+
+    <script>
+        $(".actionDeleteContent").on('click', function (e) {
+            let id = $(this).attr('data-id');
+            //console.log(id);
+            $('#confirmSubmit').attr('action', `/departments/${id}/delete`);
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

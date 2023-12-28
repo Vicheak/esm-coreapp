@@ -236,6 +236,9 @@ public class SecurityConfig {
                         HttpMethod.DELETE,
                         "/api/v1/users/**").hasAnyAuthority("SCOPE_user:delete")
 
+                .requestMatchers("/departments/**").permitAll()
+                .requestMatchers("/resources/**").permitAll()
+
                 //other endpoints not specified are authenticated
                 .anyRequest().authenticated());
 

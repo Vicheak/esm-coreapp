@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <!-- Meta Fragment -->
+    <th:block th:replace="~{/fragments/meta}"></th:block>
+
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">ESM</title>
+
+    <!-- Styles Fragment -->
+    <th:block th:replace="~{/fragments/styles}"></th:block>
+
+    <!-- Scripts Fragment -->
+    <th:block th:replace="~{/fragments/scripts}"></th:block>
+</head>
+
+<body class="header-fixed sidebar-fixed sidebar-dark header-light" id="body">
+
+<script>
+    NProgress.configure({showSpinner: false});
+    NProgress.start();
+</script>
+
+<div class="wrapper">
+
+    <!-- Left Side Bar Fragment -->
+    <div th:replace="~{/fragments/leftSideBar}"></div>
+
+    <div class="page-wrapper">
+
+        <!-- Header Fragment -->
+        <div th:replace="~{/fragments/header}"></div>
+
+        <div class="content-wrapper">
+            <div class="content" layout:fragment="content">
+
+                <!-- Child content will render here -->
+
+            </div>
+        </div>
+
+        <!-- Footer Fragment -->
+        <div th:replace="~{/fragments/footer}"></div>
+
+    </div>
+</div>
+
+<!-- Scripts Fragment -->
+<div th:replace="~{/fragments/bodyScripts}"></div>
+
+<th:block layout:fragment="childScript">
+
+    <!--Child script will render here -->
+
+</th:block>
+
+</body>
+</html>

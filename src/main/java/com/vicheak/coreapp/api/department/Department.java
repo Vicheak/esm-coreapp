@@ -1,10 +1,7 @@
 package com.vicheak.coreapp.api.department;
 
-import com.vicheak.coreapp.api.employee.Employee;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
