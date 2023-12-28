@@ -68,6 +68,9 @@ dependencies {
     //For Client Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    //For Master Layout of Web Application
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.3.0'
+
     //For Mail Service
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 

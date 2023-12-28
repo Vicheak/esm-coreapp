@@ -1,6 +1,7 @@
 package com.vicheak.coreapp.api.department;
 
 import com.vicheak.coreapp.api.department.web.DepartmentDto;
+import com.vicheak.coreapp.webapp.department.WebDepartmentDto;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -25,5 +26,10 @@ public interface DepartmentMapper {
     @Mapping(target = "description", source = "departmentDescription")
     @Mapping(target = "phone", source = "departmentPhone")
     void fromDepartmentDto(@MappingTarget Department department, DepartmentDto departmentDto);
+
+    //mapper for web app
+    WebDepartmentDto toWebDepartmentDto(Department department);
+
+    List<WebDepartmentDto> toWebDepartmentDto(List<Department> departments);
 
 }

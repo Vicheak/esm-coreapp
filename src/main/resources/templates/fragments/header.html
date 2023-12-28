@@ -1,0 +1,79 @@
+<header class="main-header " id="header"
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:th="http://www.thymeleaf.org">
+    <nav class="navbar navbar-static-top navbar-expand-lg">
+        <!-- Sidebar toggle button -->
+        <button id="sidebar-toggler" class="sidebar-toggle">
+            <span class="sr-only">Toggle navigation</span>
+        </button>
+        <!-- search form -->
+        <div class="search-form d-none d-lg-inline-block">
+            <div class="input-group">
+                <button type="button" name="search" id="search-btn" class="btn btn-flat">
+                    <i class="mdi mdi-magnify"></i>
+                </button>
+                <input type="text" name="query" id="search-input" class="form-control"
+                       placeholder="Departments, employees, etc..."
+                       autofocus autocomplete="off"/>
+            </div>
+            <div id="search-results-container">
+                <ul id="search-results"></ul>
+            </div>
+        </div>
+
+        <div class="navbar-right ">
+            <ul class="nav navbar-nav">
+                <li class="right-sidebar-in right-sidebar-2-menu">
+                    <i class="mdi mdi-settings mdi-spin"></i>
+                </li>
+
+                <!-- User Account -->
+                <li class="dropdown user-menu">
+                    <button href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+                        <img th:src="@{/resources/assets/img/user/user.png}" class="user-image" alt="User Image"
+                             width="40px" height="auto"/>
+                        <span class="d-none d-lg-inline-block">Admin</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <!-- User image -->
+                        <li class="dropdown-header">
+                            <img th:src="@{/resources/assets/img/user/user.png}" class="img-circle" alt="User Image"/>
+                            <div class="d-inline-block">
+                                <span>Admin</span>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="mdi mdi-account"></i>My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="mdi mdi-email"></i>Message
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="mdi mdi-diamond-stone"></i>Projects
+                            </a>
+                        </li>
+                        <li class="right-sidebar-in">
+                            <a href="javascript:0">
+                                <i class="mdi mdi-settings"></i>Setting
+                            </a>
+                        </li>
+                        <li class="dropdown-footer">
+                            <form th:action="@{/auth/logout}"
+                                  method="post">
+                                <button type="submit" class="btn btn-link text-decoration-none text-danger pl-4">
+                                    <i class="mdi mdi-logout mr-2"></i>
+                                    Log Out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
