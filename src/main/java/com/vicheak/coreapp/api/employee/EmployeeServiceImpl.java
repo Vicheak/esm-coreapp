@@ -8,12 +8,14 @@ import com.vicheak.coreapp.api.employee.web.TransactionEmployeeDto;
 import com.vicheak.coreapp.api.file.FileService;
 import com.vicheak.coreapp.api.file.web.FileDto;
 import com.vicheak.coreapp.pagination.PageDto;
+import com.vicheak.coreapp.security.SecurityContextConfig;
 import com.vicheak.coreapp.spec.EmployeeFilter;
 import com.vicheak.coreapp.spec.EmployeeSpec;
 import com.vicheak.coreapp.util.FormatUtil;
 import com.vicheak.coreapp.util.PageUtil;
 import com.vicheak.coreapp.util.SortUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,6 +32,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
