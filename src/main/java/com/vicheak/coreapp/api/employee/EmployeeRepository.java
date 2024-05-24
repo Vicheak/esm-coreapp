@@ -16,4 +16,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
 
     List<Employee> findByDepartmentName(String name);
 
+    Optional<Employee> findByEmailIgnoreCase(String email);
+
 }

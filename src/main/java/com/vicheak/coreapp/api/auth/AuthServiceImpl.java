@@ -127,8 +127,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void changePassword(ChangePasswordDto changePasswordDto, Authentication authentication) {
         //load the current logged user
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        User loggedUser = customUserDetails.getUser();
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        User loggedUser = authRepository.findByEmailAndIsVerifiedTrueAndIsDeletedFalse(jwt.getId())
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                                "The email is unauthorized...!")
+                );
 
         //check the matched dto and current logged user
         if (!loggedUser.getEmail().equals(changePasswordDto.email()))
@@ -224,8 +228,8 @@ public class AuthServiceImpl implements AuthService {
         //use bean dao provider in authenticate with user details service
         auth = daoAuthenticationProvider.authenticate(auth);
 
-        log.info("Auth Name : {}", auth.getName());
-        log.info("Auth Authorities : {}", auth.getAuthorities());
+//        log.info("Auth Name : {}", auth.getName());
+//        log.info("Auth Authorities : {}", auth.getAuthorities());
 
         //Instant now = Instant.now();
 
@@ -291,8 +295,8 @@ public class AuthServiceImpl implements AuthService {
 
         //logg the authentication information
         //log.info("Auth Principle : {}", auth.getPrincipal());
-        log.info("Auth Name : {}", auth.getName());
-        log.info("Auth Authorities : {}", auth.getAuthorities());
+//        log.info("Auth Name : {}", auth.getName());
+//        log.info("Auth Authorities : {}", auth.getAuthorities());
 
         Jwt jwt = (Jwt) auth.getPrincipal();
 

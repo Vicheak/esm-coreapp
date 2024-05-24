@@ -3,6 +3,7 @@ package com.vicheak.coreapp.api.employee.web;
 import com.vicheak.coreapp.api.employee.EmployeeService;
 import com.vicheak.coreapp.api.file.web.FileDto;
 import com.vicheak.coreapp.pagination.PageDto;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
+//    @RolesAllowed("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_ACCOUNTANT')")
     @GetMapping
     public List<EmployeeDto> loadAllEmployees() {
         return employeeService.loadAllEmployees();

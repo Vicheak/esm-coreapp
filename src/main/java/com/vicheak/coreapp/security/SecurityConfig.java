@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,41 +34,12 @@ import java.util.UUID;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+//@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
     private final KeyUtil keyUtil;
-
-    /*@Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-
-        //create user admin
-        UserDetails admin = User.withUsername("admin")
-                .password(passwordEncoder.encode("12345"))
-                .roles("ADMIN")
-                .build();
-
-        //create user accountant
-        UserDetails accountant = User.withUsername("accountant")
-                .password(passwordEncoder.encode("12345"))
-                .roles("ACCOUNTANT")
-                .build();
-
-        //create user staff
-        UserDetails staff = User.withUsername("staff")
-                .password(passwordEncoder.encode("12345"))
-                .roles("STAFF")
-                .build();
-
-        //add users to in-memory user manager
-        manager.createUser(admin);
-        manager.createUser(accountant);
-        manager.createUser(staff);
-
-        return manager;
-    }*/
 
     //for username password authenticate token
     @Bean
@@ -236,17 +208,12 @@ public class SecurityConfig {
                         HttpMethod.DELETE,
                         "/api/v1/users/**").hasAnyAuthority("SCOPE_user:delete")
 
+                //can config anytime implementing with web application
                 .requestMatchers("/departments/**").permitAll()
                 .requestMatchers("/resources/**").permitAll()
 
                 //other endpoints not specified are authenticated
                 .anyRequest().authenticated());
-
-        //use default form login
-        //http.formLogin(Customizer.withDefaults());
-
-        //configure http basic for client application
-        //http.httpBasic(Customizer.withDefaults());
 
         //configure JWT | OAuth2 Resource Server
         http.oauth2ResourceServer(oauth2 ->
@@ -261,28 +228,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-    //bean for access token
-    /*@Bean
-    @Primary
-    public KeyPair keyPair() {
-        try {
-            var keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            return keyPairGenerator.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
-
-    /*@Bean
-    @Primary
-    public RSAKey rsaKey(KeyPair keyPair) {
-        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
-                .privateKey(keyPair.getPrivate())
-                .keyID(UUID.randomUUID().toString())
-                .build();
-    }*/
 
     @Bean
     @Primary
@@ -307,26 +252,6 @@ public class SecurityConfig {
     public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
         return new NimbusJwtEncoder(jwkSource);
     }
-
-    //bean refresh token
-    /*@Bean("refreshTokenKeyPair")
-    public KeyPair refreshTokenKeyPair() {
-        try {
-            var keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            return keyPairGenerator.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
-
-    /*@Bean("refreshTokenRsaKey")
-    public RSAKey refreshTokenRsaKey(@Qualifier("refreshTokenKeyPair") KeyPair keyPair) {
-        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
-                .privateKey(keyPair.getPrivate())
-                .keyID(UUID.randomUUID().toString())
-                .build();
-    }*/
 
     @Bean("refreshTokenJwkSource")
     public JWKSource<SecurityContext> refreshTokenJwkSource() {
